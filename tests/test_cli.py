@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from 67_movies.cli import app
+from movies_watchlist67.cli import app
 
 runner = CliRunner()
 
