@@ -1,21 +1,28 @@
 import typer
 
-app = typer.Typer(help="Replace this with your project's command-line interface.")
+app = typer.Typer(help="A simple movie watchlist :)")
+
+
+@app.callback()
+def main() -> None:
+    """Keep track of movies you want to watch."""
 
 
 @app.command()
-def greet(name: str, count: int = 1) -> None:
-    if count < 1:
-        typer.echo("count must be at least 1", err=True)
+def add(
+    title: str,
+    watched: bool = typer.Option(
+        False,
+        "--watched",
+        help="Mark the movie as already watched.",
+    ),
+) -> None:
+    """Add a movie to your watchlist."""
+    title = title.strip()
+
+    if not title:
+        typer.echo("Movie title cannot be empty.", err=True)
         raise typer.Exit(code=1)
-    for _ in range(count):
-        typer.echo(f"Hello, {name}!")
 
-
-@app.command()
-def bye(name: str) -> None:
-    typer.echo(f"Goodbye, {name}.")
-
-
-if __name__ == "__main__":
-    app()
+    status = "watched ✓" if watched else "to watch"
+    typer.echo(f'🎬 Added "{title}" — {status}.')
