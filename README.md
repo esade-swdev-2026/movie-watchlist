@@ -1,4 +1,4 @@
-# movies_watchlist67
+# movie_watchlist
 
 A simple command-line movie watchlist for keeping track of films you want to watch or have already watched. It is designed for users who want a quick and lightweight way to manage movie titles from the terminal.
 
@@ -15,19 +15,19 @@ This creates the project environment and installs the required dependencies.
 Show the available commands:
 
 ```bash
-uv run movies_watchlist67 --help
+uv run movie_watchlist --help
 ```
 
 Add a movie to your watchlist:
 
 ```bash
-uv run movies_watchlist67 add "Interstellar"
+uv run movie_watchlist add "Interstellar"
 ```
 
 Add a movie and mark it as already watched:
 
 ```bash
-uv run movies_watchlist67 add "Interstellar" --watched
+uv run movie_watchlist add "Interstellar" --watched
 ```
 
 ## Develop
@@ -42,7 +42,7 @@ uv run pytest
 ## Layout
 
 ```text
-src/movies_watchlist67/
+src/movie_watchlist/
   cli.py          command-line interface
   __main__.py     allows the package to run as a module
 
