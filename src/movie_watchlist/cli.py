@@ -1,5 +1,7 @@
 import typer
 
+from movie_watchlist.logic import add_movie, clean_title
+
 app = typer.Typer(help="A simple movie watchlist :)")
 
 
@@ -17,12 +19,13 @@ def add(
         help="Mark the movie as already watched.",
     ),
 ) -> None:
-    """Add a movie to your watchlist."""
-    title = title.strip()
-
-    if not title:
-        typer.echo("Movie title cannot be empty.", err=True)
-        raise typer.Exit(code=1)
+    """Validate and report a movie added to the watchlist."""
+    title = clean_title(title)
+    try:
+        add_movie({}, title)
+    except ValueError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
 
     status = "watched ✓" if watched else "to watch"
     typer.echo(f'🎬 Added "{title}" — {status}.')
