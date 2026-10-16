@@ -1,54 +1,33 @@
-# movie_watchlist
+# Movie Watchlist
 
-A simple command-line movie watchlist for keeping track of films you want to watch or have already watched. It is designed for users who want a quick and lightweight way to manage movie titles from the terminal.
+A small terminal app for keeping track of films you want to watch.
 
-## Install
+## Getting started
+
+Clone the repository and install the dependencies:
 
 ```bash
+git clone https://github.com/esade-swdev-2026/movie-watchlist.git
+cd movie-watchlist
 uv sync
 ```
 
-This creates the project environment and installs the required dependencies.
-
-## Run
-
-Show the available commands:
-
-```bash
-uv run movie_watchlist --help
-```
-
-Add a movie to your watchlist:
+Add a movie, show your list, and mark it as watched:
 
 ```bash
 uv run movie_watchlist add "Interstellar"
+uv run movie_watchlist add "Arrival" --watched
+uv run movie_watchlist list
+uv run movie_watchlist watch "Interstellar"
 ```
 
-Add a movie and mark it as already watched:
+Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs. Use `uv run movie_watchlist --help` to see the commands.
 
-```bash
-uv run movie_watchlist add "Interstellar" --watched
-```
-
-## Develop
+## Checks
 
 ```bash
 uv run ruff check .
-uv run ruff format .
+uv run ruff format --check .
 uv run mypy src tests
 uv run pytest
-```
-
-## Layout
-
-```text
-src/movie_watchlist/
-  cli.py          command-line interface
-  __main__.py     allows the package to run as a module
-
-tests/
-  test_cli.py     tests for the command-line interface
-
-pyproject.toml    project configuration and dependencies
-uv.lock           locked dependency versions
 ```

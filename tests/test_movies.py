@@ -43,11 +43,21 @@ def test_add_accepts_different_titles(movies: dict[str, Movie]) -> None:
     assert "Amélie" not in movies
 
 
+def test_add_can_mark_movie_as_watched() -> None:
+    updated = add_movie({}, "Arrival", watched=True)
+    assert updated["Arrival"].watched is True
+
+
 def test_watch_marks_movie_and_keeps_original(movies: dict[str, Movie]) -> None:
     updated = mark_watched(movies, "interstellar")
 
     assert updated["Interstellar"].watched is True
     assert movies["Interstellar"].watched is False
+
+
+def test_watch_rejects_unknown_movie(movies: dict[str, Movie]) -> None:
+    with pytest.raises(ValueError, match="Movie not found"):
+        mark_watched(movies, "Unknown")
 
 
 def test_unwatched_excludes_watched_movies(movies: dict[str, Movie]) -> None:
