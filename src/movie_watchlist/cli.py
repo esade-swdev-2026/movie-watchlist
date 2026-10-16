@@ -1,6 +1,6 @@
 import typer
 
-from movie_watchlist.logic import add_movie, clean_title
+from movie_watchlist.movies import add_movie, clean_title
 
 app = typer.Typer(help="A simple movie watchlist :)")
 

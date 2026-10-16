@@ -1,6 +1,15 @@
 """Pure watchlist decisions, kept separate from command-line output."""
 
-type Watchlist = dict[str, bool]
+from dataclasses import dataclass, replace
+
+
+@dataclass
+class Movie:
+    title: str
+    watched: bool = False
+
+
+type Watchlist = dict[str, Movie]
 
 
 def clean_title(title: str) -> str:
@@ -17,18 +26,18 @@ def add_movie(movies: Watchlist, title: str) -> Watchlist:
         raise ValueError("Movie title cannot be empty.")
     if is_duplicate(movies, title):
         raise ValueError("Movie already exists.")
-    return {**movies, title: False}
+    return {**movies, title: Movie(title=title)}
 
 
 def mark_watched(movies: Watchlist, title: str) -> Watchlist:
     for saved in movies:
         if saved.casefold() == clean_title(title).casefold():
-            return {**movies, saved: True}
+            return {**movies, saved: replace(movies[saved], watched=True)}
     raise ValueError("Movie not found.")
 
 
 def unwatched_titles(movies: Watchlist) -> list[str]:
-    return [title for title, watched in movies.items() if not watched]
+    return [title for title, movie in movies.items() if not movie.watched]
 
 
 def average_rating(ratings: list[float]) -> float:
