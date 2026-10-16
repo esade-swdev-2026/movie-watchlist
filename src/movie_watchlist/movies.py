@@ -7,6 +7,11 @@ from dataclasses import dataclass, replace
 class Movie:
     title: str
     watched: bool = False
+    genre: str = ""
+    mood: str = ""
+    runtime: int = 0
+    director: str = ""
+    actors: tuple[str, str, str] = ("", "", "")
 
 
 type Watchlist = dict[str, Movie]

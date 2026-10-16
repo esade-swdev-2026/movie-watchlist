@@ -69,3 +69,24 @@ def test_movie_starts_unwatched() -> None:
 
     assert movie.title == "Interstellar"
     assert movie.watched is False
+
+
+def test_movie_stores_details() -> None:
+    movie = Movie(
+        title="Interstellar",
+        genre="Sci-Fi",
+        mood="Emotional",
+        runtime=169,
+        director="Christopher Nolan",
+        actors=(
+            "Matthew McConaughey",
+            "Anne Hathaway",
+            "Jessica Chastain",
+        ),
+    )
+
+    assert movie.genre == "Sci-Fi"
+    assert movie.mood == "Emotional"
+    assert movie.runtime == 169
+    assert movie.director == "Christopher Nolan"
+    assert len(movie.actors) == 3
