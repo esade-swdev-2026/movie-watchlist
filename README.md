@@ -12,13 +12,13 @@ cd movie-watchlist
 uv sync
 ```
 
-Add a movie, show your list, and mark it as watched:
+Add a movie, show your list, mark it as watched, and filter movies by genre:
 
-```bash
 uv run movie_watchlist add "Interstellar"
 uv run movie_watchlist add "Arrival" --watched
 uv run movie_watchlist list
 uv run movie_watchlist watch "Interstellar"
+uv run movie_watchlist filter-genre "Sci-Fi"
 ```
 
 Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs. Use `uv run movie_watchlist --help` to see the commands.
