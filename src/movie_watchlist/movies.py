@@ -47,3 +47,13 @@ def unwatched_titles(movies: Watchlist) -> list[str]:
 
 def average_rating(ratings: list[float]) -> float:
     return sum(ratings) / len(ratings) if ratings else 0.0
+
+
+def filter_by_genre(movies: Watchlist, genre: str) -> Watchlist:
+    """Return movies matching the given genre."""
+    normalized_genre = genre.strip().casefold()
+    return {
+        title: movie
+        for title, movie in movies.items()
+        if movie.genre.strip().casefold() == normalized_genre
+    }
