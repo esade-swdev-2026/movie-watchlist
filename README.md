@@ -21,6 +21,13 @@ uv run movie_watchlist list
 uv run movie_watchlist watch "Interstellar"
 ```
 
+Give a movie a mood when you add it, then show only the movies that fit a mood (case does not matter):
+
+```bash
+uv run movie_watchlist add "Up" --mood "Emotional"
+uv run movie_watchlist mood "emotional"
+```
+
 Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs. Use `uv run movie_watchlist --help` to see the commands.
 
 ## Checks

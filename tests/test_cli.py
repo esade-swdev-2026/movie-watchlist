@@ -31,6 +31,13 @@ def test_add_rejects_empty_title(watchlist_file: Path) -> None:
     assert not watchlist_file.exists()
 
 
+def test_add_saves_mood(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["add", "Interstellar", "--mood", "Emotional"])
+
+    assert result.exit_code == 0
+    assert '"mood": "Emotional"' in watchlist_file.read_text(encoding="utf-8")
+
+
 def test_add_rejects_duplicate_across_commands(watchlist_file: Path) -> None:
     runner.invoke(app, ["add", "Interstellar"])
     result = runner.invoke(app, ["add", "interstellar"])
@@ -54,6 +61,31 @@ def test_list_reports_empty_watchlist(watchlist_file: Path) -> None:
 
     assert result.exit_code == 0
     assert "Your watchlist is empty." in result.output
+
+
+def test_mood_shows_only_matching_movies(watchlist_file: Path) -> None:
+    runner.invoke(app, ["add", "Interstellar", "--mood", "Emotional"])
+    runner.invoke(app, ["add", "Arrival", "--mood", "Thoughtful"])
+    result = runner.invoke(app, ["mood", "emotional"])
+
+    assert result.exit_code == 0
+    assert "Interstellar — to watch" in result.output
+    assert "Arrival" not in result.output
+
+
+def test_mood_reports_no_matches(watchlist_file: Path) -> None:
+    runner.invoke(app, ["add", "Interstellar", "--mood", "Emotional"])
+    result = runner.invoke(app, ["mood", "Scary"])
+
+    assert result.exit_code == 0
+    assert 'No movies with the mood "Scary".' in result.output
+
+
+def test_mood_rejects_empty_mood(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["mood", "   "])
+
+    assert result.exit_code == 1
+    assert "Mood cannot be empty." in result.output
 
 
 def test_watch_updates_saved_movie(watchlist_file: Path) -> None:
