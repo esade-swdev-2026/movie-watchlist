@@ -3,7 +3,12 @@ from pathlib import Path
 
 import typer
 
-from movie_watchlist.movies import add_movie, clean_title, mark_watched
+from movie_watchlist.movies import (
+    add_movie,
+    clean_title,
+    filter_by_genre,
+    mark_watched,
+)
 from movie_watchlist.storage import load_watchlist, save_watchlist
 
 app = typer.Typer(help="Keep track of movies you want to watch.")
@@ -59,3 +64,21 @@ def watch(title: str) -> None:
         raise typer.Exit(code=1) from error
 
     typer.echo(f'Marked "{clean_title(title)}" as watched.')
+
+
+@app.command("filter-genre")
+def filter_movies_by_genre(genre: str) -> None:
+    """Show movies matching a genre."""
+    try:
+        movies = filter_by_genre(load_watchlist(watchlist_path()), genre)
+    except (ValueError, OSError) as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    if not movies:
+        typer.echo(f'No movies found for genre "{genre}".')
+        return
+
+    for movie in movies.values():
+        status = "watched" if movie.watched else "to watch"
+        typer.echo(f"{movie.title} — {status}")
