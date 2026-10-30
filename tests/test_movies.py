@@ -48,6 +48,11 @@ def test_add_can_mark_movie_as_watched() -> None:
     assert updated["Arrival"].watched is True
 
 
+def test_add_stores_trimmed_mood() -> None:
+    updated = add_movie({}, "Arrival", mood="  Thoughtful  ")
+    assert updated["Arrival"].mood == "Thoughtful"
+
+
 def test_watch_marks_movie_and_keeps_original(movies: dict[str, Movie]) -> None:
     updated = mark_watched(movies, "interstellar")
 
