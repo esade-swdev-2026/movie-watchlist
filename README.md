@@ -21,6 +21,24 @@ uv run movie_watchlist list
 uv run movie_watchlist watch "Interstellar"
 ```
 
+### Filter movies by director
+
+You can specify a director when adding a movie:
+
+```bash
+uv run movie_watchlist add "Inception" --director "Christopher Nolan"
+uv run movie_watchlist add "Titanic" --director "James Cameron"
+```
+
+To display only movies by a specific director:
+
+```bash
+uv run movie_watchlist list --director "Christopher Nolan"
+```
+
+Director filtering is case-insensitive and ignores surrounding spaces.
+
+
 Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs. Use `uv run movie_watchlist --help` to see the commands.
 
 ## Checks

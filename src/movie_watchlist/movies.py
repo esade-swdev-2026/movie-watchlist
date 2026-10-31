@@ -25,13 +25,21 @@ def is_duplicate(movies: Watchlist, title: str) -> bool:
     return any(saved.casefold() == clean_title(title).casefold() for saved in movies)
 
 
-def add_movie(movies: Watchlist, title: str, watched: bool = False) -> Watchlist:
+def add_movie(
+    movies: Watchlist,
+    title: str,
+    watched: bool = False,
+    director: str = "",
+) -> Watchlist:
     title = clean_title(title)
     if not title:
         raise ValueError("Movie title cannot be empty.")
     if is_duplicate(movies, title):
         raise ValueError("Movie already exists.")
-    return {**movies, title: Movie(title=title, watched=watched)}
+    return {
+        **movies,
+        title: Movie(title=title, watched=watched, director=director.strip()),
+    }
 
 
 def mark_watched(movies: Watchlist, title: str) -> Watchlist:
