@@ -38,5 +38,4 @@ Find movies featuring one of their three main actors:
 
 ```bash
 uv run movie_watchlist list --actor "Anne Hathaway"
-
-q
+```
