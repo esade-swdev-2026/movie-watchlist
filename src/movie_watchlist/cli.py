@@ -3,6 +3,8 @@ from pathlib import Path
 
 import typer
 
+from movie_watchlist.filter_actor import filter_by_actor
+from movie_watchlist.filters import filter_by_director
 from movie_watchlist.movies import (
     add_movie,
     clean_title,
@@ -22,10 +24,16 @@ def watchlist_path() -> Path:
 def add(
     title: str,
     watched: bool = typer.Option(False, "--watched", help="Mark the movie as already watched."),
+    director: str = typer.Option("", "--director", help="Movie director."),
 ) -> None:
     """Add a movie to your watchlist."""
     try:
-        movies = add_movie(load_watchlist(watchlist_path()), title, watched=watched)
+        movies = add_movie(
+            load_watchlist(watchlist_path()),
+            title,
+            watched=watched,
+            director=director,
+        )
         save_watchlist(watchlist_path(), movies)
     except (ValueError, OSError) as error:
         typer.echo(str(error), err=True)
@@ -36,16 +44,27 @@ def add(
 
 
 @app.command("list")
-def list_movies() -> None:
+def list_movies(
+    director: str | None = typer.Option(None, "--director", help="Filter movies by director."),
+    actor: str | None = typer.Option(None, "--actor", help="Filter movies by actor."),
+) -> None:
     """Show the movies in your watchlist."""
     try:
         movies = load_watchlist(watchlist_path())
+
+        if director is not None:
+            movies = filter_by_director(movies, director)
+
+        if actor is not None:
+            movies = filter_by_actor(movies, actor)
+
     except ValueError as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=1) from error
 
     if not movies:
-        typer.echo("Your watchlist is empty.")
+        message = "No matching movies." if actor is not None else "Your watchlist is empty."
+        typer.echo(message)
         return
 
     for movie in movies.values():

@@ -21,6 +21,24 @@ uv run movie_watchlist watch "Interstellar"
 uv run movie_watchlist filter-genre "Sci-Fi"
 ```
 
+### Filter movies by director
+
+You can specify a director when adding a movie:
+
+```bash
+uv run movie_watchlist add "Inception" --director "Christopher Nolan"
+uv run movie_watchlist add "Titanic" --director "James Cameron"
+```
+
+To display only movies by a specific director:
+
+```bash
+uv run movie_watchlist list --director "Christopher Nolan"
+```
+
+Director filtering is case-insensitive and ignores surrounding spaces.
+
+
 Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs. Use `uv run movie_watchlist --help` to see the commands.
 
 ## Checks
@@ -30,4 +48,12 @@ uv run ruff check .
 uv run ruff format --check .
 uv run mypy src tests
 uv run pytest
+```
+
+## Filter by actor
+
+Find movies featuring one of their three main actors:
+
+```bash
+uv run movie_watchlist list --actor "Anne Hathaway"
 ```
