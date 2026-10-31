@@ -3,6 +3,7 @@ from pathlib import Path
 
 import typer
 
+from movie_watchlist.filter_actor import filter_by_actor
 from movie_watchlist.movies import add_movie, clean_title, mark_watched
 from movie_watchlist.storage import load_watchlist, save_watchlist
 
@@ -31,16 +32,23 @@ def add(
 
 
 @app.command("list")
-def list_movies() -> None:
+def list_movies(
+    actor: str | None = typer.Option(None, "--actor", help="Filter movies by actor."),
+) -> None:
     """Show the movies in your watchlist."""
     try:
         movies = load_watchlist(watchlist_path())
+
+        if actor is not None:
+            movies = filter_by_actor(movies, actor)
+
     except ValueError as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=1) from error
 
     if not movies:
-        typer.echo("Your watchlist is empty.")
+        message = "No matching movies." if actor is not None else "Your watchlist is empty."
+        typer.echo(message)
         return
 
     for movie in movies.values():

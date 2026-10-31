@@ -31,3 +31,12 @@ uv run ruff format --check .
 uv run mypy src tests
 uv run pytest
 ```
+
+## Filter by actor
+
+Find movies featuring one of their three main actors:
+
+```bash
+uv run movie_watchlist list --actor "Anne Hathaway"
+
+q
