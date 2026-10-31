@@ -5,6 +5,7 @@ from movie_watchlist.movies import (
     add_movie,
     average_rating,
     clean_title,
+    filter_by_genre,
     is_duplicate,
     mark_watched,
     unwatched_titles,
@@ -100,3 +101,34 @@ def test_movie_stores_details() -> None:
     assert movie.runtime == 169
     assert movie.director == "Christopher Nolan"
     assert len(movie.actors) == 3
+
+
+def test_filter_by_genre_returns_matching_movies(
+    movies: dict[str, Movie],
+) -> None:
+    movies["Interstellar"].genre = "Sci-Fi"
+    movies["Arrival"].genre = "Drama"
+
+    filtered = filter_by_genre(movies, "Sci-Fi")
+
+    assert list(filtered) == ["Interstellar"]
+
+
+def test_filter_by_genre_ignores_case_and_spaces(
+    movies: dict[str, Movie],
+) -> None:
+    movies["Interstellar"].genre = "Sci-Fi"
+
+    filtered = filter_by_genre(movies, "  sci-fi  ")
+
+    assert list(filtered) == ["Interstellar"]
+
+
+def test_filter_by_genre_does_not_modify_original(
+    movies: dict[str, Movie],
+) -> None:
+    movies["Interstellar"].genre = "Sci-Fi"
+
+    filter_by_genre(movies, "Sci-Fi")
+
+    assert len(movies) == 2
