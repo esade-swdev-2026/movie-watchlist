@@ -4,7 +4,7 @@ from pathlib import Path
 import typer
 
 from movie_watchlist.filter_actor import filter_by_actor
-from movie_watchlist.filters import filter_by_director
+from movie_watchlist.filters import filter_by_director, filter_by_max_runtime
 from movie_watchlist.movies import (
     add_movie,
     clean_title,
@@ -25,6 +25,7 @@ def add(
     title: str,
     watched: bool = typer.Option(False, "--watched", help="Mark the movie as already watched."),
     director: str = typer.Option("", "--director", help="Movie director."),
+    runtime: int | None = typer.Option(None, "--runtime", help="Movie runtime in minutes."),
 ) -> None:
     """Add a movie to your watchlist."""
     try:
@@ -33,6 +34,7 @@ def add(
             title,
             watched=watched,
             director=director,
+            runtime=runtime,
         )
         save_watchlist(watchlist_path(), movies)
     except (ValueError, OSError) as error:
@@ -47,6 +49,9 @@ def add(
 def list_movies(
     director: str | None = typer.Option(None, "--director", help="Filter movies by director."),
     actor: str | None = typer.Option(None, "--actor", help="Filter movies by actor."),
+    max_runtime: int | None = typer.Option(
+        None, "--max-runtime", help="Maximum runtime in minutes."
+    ),
 ) -> None:
     """Show the movies in your watchlist."""
     try:
@@ -58,12 +63,16 @@ def list_movies(
         if actor is not None:
             movies = filter_by_actor(movies, actor)
 
+        if max_runtime is not None:
+            movies = filter_by_max_runtime(movies, max_runtime)
+
     except ValueError as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=1) from error
 
     if not movies:
-        message = "No matching movies." if actor is not None else "Your watchlist is empty."
+        has_filter = director is not None or actor is not None or max_runtime is not None
+        message = "No matching movies." if has_filter else "Your watchlist is empty."
         typer.echo(message)
         return
 
