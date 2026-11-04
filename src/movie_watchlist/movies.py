@@ -30,6 +30,7 @@ def add_movie(
     title: str,
     watched: bool = False,
     director: str = "",
+    mood: str = "",
 ) -> Watchlist:
     title = clean_title(title)
     if not title:
@@ -38,7 +39,12 @@ def add_movie(
         raise ValueError("Movie already exists.")
     return {
         **movies,
-        title: Movie(title=title, watched=watched, director=director.strip()),
+        title: Movie(
+            title=title,
+            watched=watched,
+            director=director.strip(),
+            mood=mood.strip(),
+        ),
     }
 
 
