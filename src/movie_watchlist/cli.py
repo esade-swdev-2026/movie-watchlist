@@ -4,6 +4,7 @@ from pathlib import Path
 import typer
 
 from movie_watchlist.filter_actor import filter_by_actor
+from movie_watchlist.filter_mood import filter_by_mood
 from movie_watchlist.filters import filter_by_director, filter_by_max_runtime
 from movie_watchlist.movies import (
     add_movie,
@@ -26,6 +27,7 @@ def add(
     watched: bool = typer.Option(False, "--watched", help="Mark the movie as already watched."),
     director: str = typer.Option("", "--director", help="Movie director."),
     runtime: int | None = typer.Option(None, "--runtime", help="Movie runtime in minutes."),
+    mood: str = typer.Option("", "--mood", help="The mood the movie fits, e.g. Emotional."),
 ) -> None:
     """Add a movie to your watchlist."""
     try:
@@ -35,6 +37,7 @@ def add(
             watched=watched,
             director=director,
             runtime=runtime,
+            mood=mood,
         )
         save_watchlist(watchlist_path(), movies)
     except (ValueError, OSError) as error:
@@ -74,6 +77,24 @@ def list_movies(
         has_filter = director is not None or actor is not None or max_runtime is not None
         message = "No matching movies." if has_filter else "Your watchlist is empty."
         typer.echo(message)
+        return
+
+    for movie in movies.values():
+        status = "watched" if movie.watched else "to watch"
+        typer.echo(f"{movie.title} — {status}")
+
+
+@app.command("mood")
+def list_by_mood(mood: str) -> None:
+    """Show the movies that fit a mood."""
+    try:
+        movies = filter_by_mood(load_watchlist(watchlist_path()), mood)
+    except ValueError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    if not movies:
+        typer.echo(f'No movies with the mood "{mood.strip()}".')
         return
 
     for movie in movies.values():

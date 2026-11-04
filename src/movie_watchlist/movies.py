@@ -31,6 +31,7 @@ def add_movie(
     watched: bool = False,
     director: str = "",
     runtime: int | None = None,
+    mood: str = "",
 ) -> Watchlist:
     title = clean_title(title)
     if not title:
@@ -47,6 +48,7 @@ def add_movie(
             watched=watched,
             director=director.strip(),
             runtime=runtime if runtime is not None else 0,
+            mood=mood.strip(),
         ),
     }
 
