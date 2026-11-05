@@ -43,3 +43,15 @@ def test_invalid_movie_data_raises_clear_error(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Invalid watchlist file"):
         load_watchlist(path)
+
+
+def test_load_old_movie_without_rating(tmp_path: Path) -> None:
+    path = tmp_path / "movies.json"
+    path.write_text(
+        '[{"title": "Arrival", "watched": true}]',
+        encoding="utf-8",
+    )
+
+    movies = load_watchlist(path)
+
+    assert movies["Arrival"].rating is None
