@@ -12,6 +12,7 @@ class Movie:
     runtime: int = 0
     director: str = ""
     actors: tuple[str, str, str] = ("", "", "")
+    rating: int | None = None
 
 
 type Watchlist = dict[str, Movie]
@@ -46,6 +47,17 @@ def mark_watched(movies: Watchlist, title: str) -> Watchlist:
     for saved in movies:
         if saved.casefold() == clean_title(title).casefold():
             return {**movies, saved: replace(movies[saved], watched=True)}
+    raise ValueError("Movie not found.")
+
+
+def rate_movie(movies: Watchlist, title: str, rating: int) -> Watchlist:
+    if not 1 <= rating <= 10:
+        raise ValueError("Rating must be between 1 and 10.")
+
+    for saved in movies:
+        if saved.casefold() == clean_title(title).casefold():
+            return {**movies, saved: replace(movies[saved], rating=rating)}
+
     raise ValueError("Movie not found.")
 
 

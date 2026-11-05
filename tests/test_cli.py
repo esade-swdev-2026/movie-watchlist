@@ -78,3 +78,20 @@ def test_list_rejects_invalid_file(watchlist_file: Path) -> None:
 
     assert result.exit_code == 1
     assert "Could not read watchlist file." in result.output
+
+
+def test_rate_updates_saved_movie(watchlist_file: Path) -> None:
+    runner.invoke(app, ["add", "Interstellar"])
+    result = runner.invoke(app, ["rate", "Interstellar", "8"])
+
+    assert result.exit_code == 0
+    assert "Interstellar" in watchlist_file.read_text(encoding="utf-8")
+    assert '"rating": 8' in watchlist_file.read_text(encoding="utf-8")
+
+
+def test_rate_rejects_invalid_rating(watchlist_file: Path) -> None:
+    runner.invoke(app, ["add", "Interstellar"])
+    result = runner.invoke(app, ["rate", "Interstellar", "11"])
+
+    assert result.exit_code == 1
+    assert "between 1 and 10" in result.output

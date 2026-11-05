@@ -8,6 +8,7 @@ from movie_watchlist.movies import (
     filter_by_genre,
     is_duplicate,
     mark_watched,
+    rate_movie,
     unwatched_titles,
 )
 
@@ -132,3 +133,35 @@ def test_filter_by_genre_does_not_modify_original(
     filter_by_genre(movies, "Sci-Fi")
 
     assert len(movies) == 2
+
+
+def test_movie_starts_without_rating() -> None:
+    movie = Movie(title="Interstellar")
+
+    assert movie.rating is None
+
+
+def test_movie_stores_rating() -> None:
+    movie = Movie(title="Interstellar", rating=8)
+
+    assert movie.rating == 8
+
+
+def test_rate_movie_stores_rating(movies: dict[str, Movie]) -> None:
+    updated = rate_movie(movies, "interstellar", 8)
+
+    assert updated["Interstellar"].rating == 8
+    assert movies["Interstellar"].rating is None
+
+
+@pytest.mark.parametrize("rating", [0, 11])
+def test_rate_movie_rejects_invalid_rating(movies: dict[str, Movie], rating: int) -> None:
+    with pytest.raises(ValueError, match="between 1 and 10"):
+        rate_movie(movies, "Interstellar", rating)
+
+
+def test_rate_movie_rejects_unknown_movie(
+    movies: dict[str, Movie],
+) -> None:
+    with pytest.raises(ValueError, match="Movie not found"):
+        rate_movie(movies, "Unknown", 8)

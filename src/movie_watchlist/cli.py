@@ -10,6 +10,7 @@ from movie_watchlist.movies import (
     clean_title,
     filter_by_genre,
     mark_watched,
+    rate_movie,
 )
 from movie_watchlist.storage import load_watchlist, save_watchlist
 
@@ -83,6 +84,18 @@ def watch(title: str) -> None:
         raise typer.Exit(code=1) from error
 
     typer.echo(f'Marked "{clean_title(title)}" as watched.')
+
+
+@app.command()
+def rate(title: str, rating: int) -> None:
+    """Rate a movie from 1 to 10."""
+    try:
+        movies = rate_movie(load_watchlist(watchlist_path()), title, rating)
+        save_watchlist(watchlist_path(), movies)
+    except (ValueError, OSError) as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(f'Rated "{clean_title(title)}" {rating}/10.')
 
 
 @app.command("filter-genre")
