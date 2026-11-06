@@ -30,6 +30,15 @@ def test_add_rejects_invalid_runtime(
     assert "Runtime must be positive." in result.output
 
 
+def test_add_rejects_non_numeric_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MOVIE_WATCHLIST_FILE", str(tmp_path / "movies.json"))
+
+    result = CliRunner().invoke(app, ["add", "Interstellar", "--runtime", "abc"])
+
+    assert result.exit_code != 0
+    assert "Invalid value" in result.output
+
+
 def test_list_filters_by_max_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     path = tmp_path / "movies.json"
     monkeypatch.setenv("MOVIE_WATCHLIST_FILE", str(path))
@@ -49,6 +58,32 @@ def test_list_filters_by_max_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert "Toy Story" in result.output
     assert "Interstellar" not in result.output
     assert "Unknown" not in result.output
+
+
+def test_list_filters_by_runtime_and_director(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "movies.json"
+    monkeypatch.setenv("MOVIE_WATCHLIST_FILE", str(path))
+
+    save_watchlist(
+        path,
+        {
+            "Dunkirk": Movie(title="Dunkirk", runtime=106, director="Christopher Nolan"),
+            "Interstellar": Movie(title="Interstellar", runtime=169, director="Christopher Nolan"),
+            "Toy Story": Movie(title="Toy Story", runtime=81, director="John Lasseter"),
+        },
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["list", "--max-runtime", "120", "--director", "Christopher Nolan"],
+    )
+
+    assert result.exit_code == 0
+    assert "Dunkirk" in result.output
+    assert "Interstellar" not in result.output
+    assert "Toy Story" not in result.output
 
 
 def test_list_rejects_invalid_max_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

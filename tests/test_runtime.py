@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 
 from movie_watchlist.filters import filter_by_max_runtime
@@ -39,6 +41,8 @@ def test_filter_rejects_invalid_limit(movies: dict[str, Movie], limit: int) -> N
 def test_filter_does_not_modify_original(
     movies: dict[str, Movie],
 ) -> None:
+    original_movies = deepcopy(movies)
+
     filter_by_max_runtime(movies, 100)
 
-    assert len(movies) == 4
+    assert movies == original_movies
