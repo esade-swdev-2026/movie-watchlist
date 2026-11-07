@@ -30,6 +30,7 @@ def add_movie(
     title: str,
     watched: bool = False,
     director: str = "",
+    runtime: int | None = None,
     mood: str = "",
 ) -> Watchlist:
     title = clean_title(title)
@@ -37,12 +38,16 @@ def add_movie(
         raise ValueError("Movie title cannot be empty.")
     if is_duplicate(movies, title):
         raise ValueError("Movie already exists.")
+    if runtime is not None and runtime <= 0:
+        raise ValueError("Runtime must be positive.")
+
     return {
         **movies,
         title: Movie(
             title=title,
             watched=watched,
             director=director.strip(),
+            runtime=runtime if runtime is not None else 0,
             mood=mood.strip(),
         ),
     }

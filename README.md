@@ -14,6 +14,8 @@ uv sync
 
 Add a movie, show your list, mark it as watched, and filter movies by genre:
 
+
+```bash
 uv run movie_watchlist add "Interstellar"
 uv run movie_watchlist add "Arrival" --watched
 uv run movie_watchlist list
@@ -65,3 +67,24 @@ Find movies featuring one of their three main actors:
 ```bash
 uv run movie_watchlist list --actor "Anne Hathaway"
 ```
+
+## Filter by running time
+
+You can specify the runtime of a movie in minutes when adding it:
+
+```bash
+uv run movie_watchlist add "Interstellar" --runtime 169
+uv run movie_watchlist add "Toy Story" --runtime 81
+```
+
+To show only movies that are 120 minutes long or less:
+
+```bash
+uv run movie_watchlist list --max-runtime 120
+```
+
+You can combine `--max-runtime` with other filters,
+such as `--director` and `--actor`.
+
+Movies with unknown runtime are excluded when filtering.
+Runtime values must be positive integers.
