@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from movie_watchlist.cli import app
+from movie_watchlist.storage import load_watchlist
 
 runner = CliRunner()
 
@@ -85,8 +86,8 @@ def test_rate_updates_saved_movie(watchlist_file: Path) -> None:
     result = runner.invoke(app, ["rate", "Interstellar", "8"])
 
     assert result.exit_code == 0
-    assert "Interstellar" in watchlist_file.read_text(encoding="utf-8")
-    assert '"rating": 8' in watchlist_file.read_text(encoding="utf-8")
+    saved_movies = load_watchlist(watchlist_file)
+    assert saved_movies["Interstellar"].rating == 8
 
 
 def test_rate_rejects_invalid_rating(watchlist_file: Path) -> None:
@@ -95,3 +96,18 @@ def test_rate_rejects_invalid_rating(watchlist_file: Path) -> None:
 
     assert result.exit_code == 1
     assert "between 1 and 10" in result.output
+
+
+def test_rate_rejects_zero_rating(watchlist_file: Path) -> None:
+    runner.invoke(app, ["add", "Interstellar"])
+    result = runner.invoke(app, ["rate", "Interstellar", "0"])
+
+    assert result.exit_code == 1
+    assert "between 1 and 10" in result.output
+
+
+def test_rate_rejects_unknown_movie(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["rate", "Nonexistent Movie", "8"])
+
+    assert result.exit_code == 1
+    assert "Movie not found." in result.output

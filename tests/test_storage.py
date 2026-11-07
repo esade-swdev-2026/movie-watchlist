@@ -19,6 +19,7 @@ def test_save_and_load_movies_with_details(tmp_path: Path) -> None:
             genre="Sci-Fi",
             mood="Thoughtful",
             runtime=169,
+            rating=8,
             director="Christopher Nolan",
             actors=("Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"),
         )
@@ -27,6 +28,7 @@ def test_save_and_load_movies_with_details(tmp_path: Path) -> None:
     save_watchlist(path, movies)
 
     assert load_watchlist(path) == movies
+    assert load_watchlist(path)["Interstellar"].rating == 8
 
 
 def test_invalid_json_raises_clear_error(tmp_path: Path) -> None:
