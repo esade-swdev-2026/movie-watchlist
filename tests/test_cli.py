@@ -91,7 +91,7 @@ def test_mood_rejects_empty_mood(watchlist_file: Path) -> None:
 
 def test_watch_updates_saved_movie(watchlist_file: Path) -> None:
     runner.invoke(app, ["add", "Interstellar"])
-    result = runner.invoke(app, ["watch", "interstellar"])
+    result = runner.invoke(app, ["watch", "interstellar", "--rating", "8"])
     listed = runner.invoke(app, ["list"])
 
     assert result.exit_code == 0
@@ -99,7 +99,7 @@ def test_watch_updates_saved_movie(watchlist_file: Path) -> None:
 
 
 def test_watch_rejects_unknown_movie(watchlist_file: Path) -> None:
-    result = runner.invoke(app, ["watch", "Unknown"])
+    result = runner.invoke(app, ["watch", "Unknown", "--rating", "8"])
 
     assert result.exit_code == 1
     assert "Movie not found." in result.output
@@ -143,3 +143,14 @@ def test_rate_rejects_unknown_movie(watchlist_file: Path) -> None:
 
     assert result.exit_code == 1
     assert "Movie not found." in result.output
+
+
+def test_watch_without_a_rating_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "movies.json"
+    monkeypatch.setenv("MOVIE_WATCHLIST_FILE", str(path))
+    runner.invoke(app, ["add", "Interstellar"])
+
+    result = runner.invoke(app, ["watch", "Interstellar"])
+
+    assert result.exit_code != 0
+    assert load_watchlist(path)["Interstellar"].watched is False

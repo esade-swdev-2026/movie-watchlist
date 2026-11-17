@@ -19,7 +19,7 @@ Add a movie, show your list, mark it as watched, and filter movies by genre:
 uv run movie_watchlist add "Interstellar"
 uv run movie_watchlist add "Arrival" --watched
 uv run movie_watchlist list
-uv run movie_watchlist watch "Interstellar"
+uv run movie_watchlist watch "Interstellar" --rating 9
 uv run movie_watchlist filter-genre "Sci-Fi"
 ```
 
@@ -88,3 +88,35 @@ such as `--director` and `--actor`.
 
 Movies with unknown runtime are excluded when filtering.
 Runtime values must be positive integers.
+
+## Add genre and actors
+
+When adding a movie, you can give it a genre and up to three actors.
+Repeat `--actor` for each one:
+
+```bash
+uv run movie_watchlist add "Up" --genre "Animation" --mood "Emotional" --actor "Ed Asner"
+```
+
+Adding more than three actors is rejected with `At most three actors.`
+
+## Combine filters
+
+`list` and `suggest` accept the same filters, and they can be combined:
+`--director`, `--actor`, `--max-runtime`, `--genre` and `--mood`.
+
+```bash
+uv run movie_watchlist list --genre "Animation" --mood "Emotional" --max-runtime 120
+```
+
+## Suggest a movie
+
+`suggest` picks the highest rated unwatched movie, with ties broken by title.
+It applies any filters you pass first:
+
+```bash
+uv run movie_watchlist suggest --genre "Sci-Fi"
+```
+
+The command prints `Suggestion: <title>`. If nothing matches, it prints `No movies to suggest.`
+

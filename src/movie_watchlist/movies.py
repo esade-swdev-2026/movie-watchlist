@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 
 
-@dataclass
+@dataclass(frozen=True)
 class Movie:
     title: str
     watched: bool = False
@@ -11,8 +11,11 @@ class Movie:
     mood: str = ""
     runtime: int = 0
     director: str = ""
-    actors: tuple[str, str, str] = ("", "", "")
+    actors: tuple[str, ...] = ()
     rating: int | None = None
+    year: int | None = None
+    overview: str = ""
+    poster_url: str = ""
 
 
 type Watchlist = dict[str, Movie]
@@ -22,8 +25,19 @@ def clean_title(title: str) -> str:
     return title.strip()
 
 
+MAX_MAIN_ACTORS = 3
+MIN_RATING = 1
+MAX_RATING = 10
+
+
+def find_saved_title(movies: Watchlist, title: str) -> str | None:
+    """Return the saved key for a title, ignoring case and surrounding spaces."""
+    wanted = clean_title(title).casefold()
+    return next((saved for saved in movies if saved.casefold() == wanted), None)
+
+
 def is_duplicate(movies: Watchlist, title: str) -> bool:
-    return any(saved.casefold() == clean_title(title).casefold() for saved in movies)
+    return find_saved_title(movies, title) is not None
 
 
 def add_movie(
@@ -33,6 +47,8 @@ def add_movie(
     director: str = "",
     runtime: int | None = None,
     mood: str = "",
+    genre: str = "",
+    actors: list[str] | None = None,
 ) -> Watchlist:
     title = clean_title(title)
     if not title:
@@ -41,6 +57,9 @@ def add_movie(
         raise ValueError("Movie already exists.")
     if runtime is not None and runtime <= 0:
         raise ValueError("Runtime must be positive.")
+    cast = [name.strip() for name in (actors or []) if name.strip()]
+    if len(cast) > MAX_MAIN_ACTORS:
+        raise ValueError("At most three actors.")
 
     return {
         **movies,
@@ -50,26 +69,26 @@ def add_movie(
             director=director.strip(),
             runtime=runtime if runtime is not None else 0,
             mood=mood.strip(),
+            genre=genre.strip(),
+            actors=tuple(cast),
         ),
     }
 
 
 def mark_watched(movies: Watchlist, title: str) -> Watchlist:
-    for saved in movies:
-        if saved.casefold() == clean_title(title).casefold():
-            return {**movies, saved: replace(movies[saved], watched=True)}
-    raise ValueError("Movie not found.")
+    saved = find_saved_title(movies, title)
+    if saved is None:
+        raise ValueError("Movie not found.")
+    return {**movies, saved: replace(movies[saved], watched=True)}
 
 
 def rate_movie(movies: Watchlist, title: str, rating: int) -> Watchlist:
-    if not 1 <= rating <= 10:
-        raise ValueError("Rating must be between 1 and 10.")
-
-    for saved in movies:
-        if saved.casefold() == clean_title(title).casefold():
-            return {**movies, saved: replace(movies[saved], rating=rating)}
-
-    raise ValueError("Movie not found.")
+    if not MIN_RATING <= rating <= MAX_RATING:
+        raise ValueError(f"Rating must be between {MIN_RATING} and {MAX_RATING}.")
+    saved = find_saved_title(movies, title)
+    if saved is None:
+        raise ValueError("Movie not found.")
+    return {**movies, saved: replace(movies[saved], rating=rating)}
 
 
 def unwatched_titles(movies: Watchlist) -> list[str]:
@@ -80,11 +99,21 @@ def average_rating(ratings: list[float]) -> float:
     return sum(ratings) / len(ratings) if ratings else 0.0
 
 
-def filter_by_genre(movies: Watchlist, genre: str) -> Watchlist:
-    """Return movies matching the given genre."""
-    normalized_genre = genre.strip().casefold()
-    return {
-        title: movie
-        for title, movie in movies.items()
-        if movie.genre.strip().casefold() == normalized_genre
-    }
+def update_details(
+    movies: Watchlist,
+    title: str,
+    *,
+    year: int | None = None,
+    overview: str = "",
+    poster_url: str = "",
+) -> Watchlist:
+    saved = find_saved_title(movies, title)
+    if saved is None:
+        raise ValueError("Movie not found.")
+    updated = replace(
+        movies[saved],
+        year=year,
+        overview=overview.strip(),
+        poster_url=poster_url.strip(),
+    )
+    return {**movies, saved: updated}

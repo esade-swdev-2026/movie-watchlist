@@ -1,11 +1,13 @@
+from dataclasses import replace
+
 import pytest
 
+from movie_watchlist.filters import filter_by_genre
 from movie_watchlist.movies import (
     Movie,
     add_movie,
     average_rating,
     clean_title,
-    filter_by_genre,
     is_duplicate,
     mark_watched,
     rate_movie,
@@ -112,8 +114,8 @@ def test_movie_stores_details() -> None:
 def test_filter_by_genre_returns_matching_movies(
     movies: dict[str, Movie],
 ) -> None:
-    movies["Interstellar"].genre = "Sci-Fi"
-    movies["Arrival"].genre = "Drama"
+    movies["Interstellar"] = replace(movies["Interstellar"], genre="Sci-Fi")
+    movies["Arrival"] = replace(movies["Arrival"], genre="Drama")
 
     filtered = filter_by_genre(movies, "Sci-Fi")
 
@@ -123,7 +125,7 @@ def test_filter_by_genre_returns_matching_movies(
 def test_filter_by_genre_ignores_case_and_spaces(
     movies: dict[str, Movie],
 ) -> None:
-    movies["Interstellar"].genre = "Sci-Fi"
+    movies["Interstellar"] = replace(movies["Interstellar"], genre="Sci-Fi")
 
     filtered = filter_by_genre(movies, "  sci-fi  ")
 
@@ -133,7 +135,7 @@ def test_filter_by_genre_ignores_case_and_spaces(
 def test_filter_by_genre_does_not_modify_original(
     movies: dict[str, Movie],
 ) -> None:
-    movies["Interstellar"].genre = "Sci-Fi"
+    movies["Interstellar"] = replace(movies["Interstellar"], genre="Sci-Fi")
 
     filter_by_genre(movies, "Sci-Fi")
 
