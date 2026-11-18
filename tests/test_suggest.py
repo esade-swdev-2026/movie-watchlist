@@ -41,6 +41,15 @@ def test_suggest_breaks_ties_by_title() -> None:
     assert suggestion.title == "Arrival"
 
 
+def test_suggest_breaks_ties_ignoring_case() -> None:
+    movies = {"Zootopia": Movie(title="Zootopia"), "avatar": Movie(title="avatar")}
+
+    suggestion = suggest_movie(movies)
+
+    assert suggestion is not None
+    assert suggestion.title == "avatar"
+
+
 @pytest.fixture
 def watchlist_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     path = tmp_path / "movies.json"

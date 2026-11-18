@@ -31,6 +31,54 @@ def test_save_and_load_movies_with_details(tmp_path: Path) -> None:
     assert load_watchlist(path)["Interstellar"].rating == 8
 
 
+def _write(path: Path, records: str) -> Path:
+    path.write_text(records, encoding="utf-8")
+    return path
+
+
+def test_load_rejects_negative_runtime(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "Up", "runtime": -5}]')
+
+    with pytest.raises(ValueError, match="runtime"):
+        load_watchlist(path)
+
+
+def test_load_allows_zero_runtime_as_unknown(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "Up", "runtime": 0}]')
+
+    assert load_watchlist(path)["Up"].runtime == 0
+
+
+def test_load_rejects_more_than_three_actors(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "Up", "actors": ["A", "B", "C", "D"]}]')
+
+    with pytest.raises(ValueError, match="three actors"):
+        load_watchlist(path)
+
+
+def test_load_rejects_empty_actor_names(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "Up", "actors": ["A", "  "]}]')
+
+    with pytest.raises(ValueError, match="actors"):
+        load_watchlist(path)
+
+
+def test_load_trims_titles(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "  Up  "}]')
+
+    movies = load_watchlist(path)
+
+    assert list(movies) == ["Up"]
+    assert movies["Up"].title == "Up"
+
+
+def test_load_rejects_titles_that_differ_only_in_case(tmp_path: Path) -> None:
+    path = _write(tmp_path / "m.json", '[{"title": "Arrival"}, {"title": "arrival"}]')
+
+    with pytest.raises(ValueError, match="twice"):
+        load_watchlist(path)
+
+
 def test_invalid_json_raises_clear_error(tmp_path: Path) -> None:
     path = tmp_path / "movies.json"
     path.write_text("not json", encoding="utf-8")

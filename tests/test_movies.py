@@ -47,9 +47,25 @@ def test_add_accepts_different_titles(movies: dict[str, Movie]) -> None:
     assert "Amélie" not in movies
 
 
-def test_add_can_mark_movie_as_watched() -> None:
-    updated = add_movie({}, "Arrival", watched=True)
+def test_add_can_mark_movie_as_watched_with_a_rating() -> None:
+    updated = add_movie({}, "Arrival", watched=True, rating=8)
     assert updated["Arrival"].watched is True
+    assert updated["Arrival"].rating == 8
+
+
+def test_add_rejects_watched_movie_without_rating() -> None:
+    with pytest.raises(ValueError, match="needs a rating"):
+        add_movie({}, "Arrival", watched=True)
+
+
+def test_add_rejects_rating_for_unwatched_movie() -> None:
+    with pytest.raises(ValueError, match="Only watched movies"):
+        add_movie({}, "Arrival", rating=8)
+
+
+def test_add_rejects_rating_out_of_range() -> None:
+    with pytest.raises(ValueError, match="between 1 and 10"):
+        add_movie({}, "Arrival", watched=True, rating=11)
 
 
 def test_add_stores_trimmed_mood() -> None:

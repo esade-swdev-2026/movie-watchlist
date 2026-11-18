@@ -5,7 +5,15 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from movie_watchlist.movies import MAX_RATING, MIN_RATING, Movie, Watchlist
+from movie_watchlist.movies import (
+    MAX_MAIN_ACTORS,
+    MAX_RATING,
+    MIN_RATING,
+    Movie,
+    Watchlist,
+    clean_title,
+    find_saved_title,
+)
 
 
 def load_watchlist(path: Path) -> Watchlist:
@@ -20,6 +28,8 @@ def load_watchlist(path: Path) -> Watchlist:
     movies: Watchlist = {}
     for record in records:
         movie = _movie_from_record(record)
+        if find_saved_title(movies, movie.title) is not None:
+            raise ValueError(f"Invalid watchlist file: '{movie.title}' appears twice.")
         movies[movie.title] = movie
     return movies
 
@@ -27,21 +37,26 @@ def load_watchlist(path: Path) -> Watchlist:
 def _movie_from_record(record: object) -> Movie:
     if not isinstance(record, dict):
         raise ValueError("Invalid watchlist file: each movie must be an object.")
-    title = _field(record, "title", str, "")
-    if not title.strip():
+    title = clean_title(_field(record, "title", str, ""))
+    if not title:
         raise ValueError("Invalid watchlist file: a movie has no title.")
+    runtime = _field(record, "runtime", int, 0)
+    if runtime < 0:
+        raise ValueError(f"Invalid watchlist file: runtime of '{title}' is negative.")
     rating = _field(record, "rating", int, None)
     if rating is not None and not MIN_RATING <= rating <= MAX_RATING:
         raise ValueError(f"Invalid watchlist file: rating of '{title}' is out of range.")
     actors = _field(record, "actors", list, [])
-    if not all(isinstance(name, str) for name in actors):
+    if not all(isinstance(name, str) and name.strip() for name in actors):
         raise ValueError(f"Invalid watchlist file: actors of '{title}' must be names.")
+    if len(actors) > MAX_MAIN_ACTORS:
+        raise ValueError(f"Invalid watchlist file: '{title}' has more than three actors.")
     return Movie(
         title=title,
         watched=_field(record, "watched", bool, False),
         genre=_field(record, "genre", str, ""),
         mood=_field(record, "mood", str, ""),
-        runtime=_field(record, "runtime", int, 0),
+        runtime=runtime,
         director=_field(record, "director", str, ""),
         actors=tuple(actors),
         rating=rating,

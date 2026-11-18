@@ -49,7 +49,7 @@ def test_add_rejects_duplicate_across_commands(watchlist_file: Path) -> None:
 
 def test_list_shows_saved_movies(watchlist_file: Path) -> None:
     runner.invoke(app, ["add", "Interstellar"])
-    runner.invoke(app, ["add", "Arrival", "--watched"])
+    runner.invoke(app, ["add", "Arrival", "--watched", "--rating", "9"])
     result = runner.invoke(app, ["list"])
 
     assert result.exit_code == 0
@@ -96,6 +96,22 @@ def test_watch_updates_saved_movie(watchlist_file: Path) -> None:
 
     assert result.exit_code == 0
     assert "Interstellar — watched" in listed.output
+    assert load_watchlist(watchlist_file)["Interstellar"].rating == 8
+
+
+def test_add_watched_requires_a_rating(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["add", "Arrival", "--watched"])
+
+    assert result.exit_code == 1
+    assert "needs a rating" in result.output
+    assert not watchlist_file.exists()
+
+
+def test_add_watched_saves_the_rating(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["add", "Arrival", "--watched", "--rating", "9"])
+
+    assert result.exit_code == 0
+    assert load_watchlist(watchlist_file)["Arrival"].rating == 9
 
 
 def test_watch_rejects_unknown_movie(watchlist_file: Path) -> None:

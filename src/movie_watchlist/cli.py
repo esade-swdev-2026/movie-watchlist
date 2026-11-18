@@ -71,6 +71,10 @@ def add(
         list[str] | None,
         typer.Option("--actor", help="A main actor. Repeat up to three times."),
     ] = None,
+    rating: Annotated[
+        int | None,
+        typer.Option("--rating", help="Your rating from 1 to 10. Required with --watched."),
+    ] = None,
 ) -> None:
     """Add a movie to your watchlist."""
     with exit_on_error():
@@ -83,6 +87,7 @@ def add(
             mood=mood,
             genre=genre,
             actors=actor,
+            rating=rating,
         )
         save_watchlist(watchlist_path(), movies)
 

@@ -49,6 +49,7 @@ def add_movie(
     mood: str = "",
     genre: str = "",
     actors: list[str] | None = None,
+    rating: int | None = None,
 ) -> Watchlist:
     title = clean_title(title)
     if not title:
@@ -57,6 +58,12 @@ def add_movie(
         raise ValueError("Movie already exists.")
     if runtime is not None and runtime <= 0:
         raise ValueError("Runtime must be positive.")
+    if watched and rating is None:
+        raise ValueError("A watched movie needs a rating.")
+    if rating is not None and not watched:
+        raise ValueError("Only watched movies can have a rating.")
+    if rating is not None and not MIN_RATING <= rating <= MAX_RATING:
+        raise ValueError(f"Rating must be between {MIN_RATING} and {MAX_RATING}.")
     cast = [name.strip() for name in (actors or []) if name.strip()]
     if len(cast) > MAX_MAIN_ACTORS:
         raise ValueError("At most three actors.")
@@ -71,6 +78,7 @@ def add_movie(
             mood=mood.strip(),
             genre=genre.strip(),
             actors=tuple(cast),
+            rating=rating,
         ),
     }
 

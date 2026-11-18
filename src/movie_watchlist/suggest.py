@@ -8,4 +8,4 @@ def suggest_movie(movies: Watchlist) -> Movie | None:
     unwatched = [movie for movie in movies.values() if not movie.watched]
     if not unwatched:
         return None
-    return min(unwatched, key=lambda movie: (-(movie.rating or 0), movie.title))
+    return min(unwatched, key=lambda movie: (-(movie.rating or 0), movie.title.casefold()))

@@ -64,9 +64,8 @@ def test_list_combines_actor_and_max_runtime(watchlist_file: Path) -> None:
         watchlist_file,
         {
             "Arrival": Movie(title="Arrival", runtime=116, actors=("Amy Adams", "Jeremy Renner")),
-            "Big Fish": Movie(
-                title="Big Fish", runtime=125, actors=("Ewan McGregor", "Albert Finney", "")
-            ),
+            "Enemy": Movie(title="Enemy", runtime=91, actors=("Jake Gyllenhaal",)),
+            "Long Adams": Movie(title="Long Adams", runtime=150, actors=("Amy Adams",)),
         },
     )
 
@@ -74,7 +73,8 @@ def test_list_combines_actor_and_max_runtime(watchlist_file: Path) -> None:
 
     assert result.exit_code == 0
     assert "Arrival" in result.output
-    assert "Big Fish" not in result.output
+    assert "Enemy" not in result.output  # excluded by the actor filter
+    assert "Long Adams" not in result.output  # excluded by the runtime filter
 
 
 def test_add_accepts_exactly_three_actors(watchlist_file: Path) -> None:

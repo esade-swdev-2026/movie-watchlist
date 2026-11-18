@@ -7,7 +7,7 @@
 ## Product Backlog
 
 1. **As a user, I can add a movie to my watchlist, so that I can keep track of movies I want to watch.**
-   Each movie is stored with its title, genre, mood, running time, director and three main actors.
+   Each movie is stored with its title, genre, mood, running time, director and up to three main actors (zero to three; a film may have fewer than three known).
 
 2. **As a user, I can rate a movie, so that I can keep my personal opinion of the movies in my watchlist.**
    Each movie can have a personal rating that is saved with it.
