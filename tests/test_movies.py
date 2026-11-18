@@ -12,6 +12,7 @@ from movie_watchlist.movies import (
     mark_watched,
     rate_movie,
     unwatched_titles,
+    update_details,
 )
 
 
@@ -58,9 +59,32 @@ def test_add_rejects_watched_movie_without_rating() -> None:
         add_movie({}, "Arrival", watched=True)
 
 
-def test_add_rejects_rating_for_unwatched_movie() -> None:
-    with pytest.raises(ValueError, match="Only watched movies"):
-        add_movie({}, "Arrival", rating=8)
+def test_add_accepts_rating_for_unwatched_movie() -> None:
+    updated = add_movie({}, "Arrival", rating=8)
+    assert updated["Arrival"].watched is False
+    assert updated["Arrival"].rating == 8
+
+
+def test_add_rejects_blank_actor_name() -> None:
+    with pytest.raises(ValueError, match="cannot be blank"):
+        add_movie({}, "Arrival", actors=["Amy Adams", "   "])
+
+
+def test_add_rejects_four_actors_when_one_is_blank() -> None:
+    with pytest.raises(ValueError, match="cannot be blank"):
+        add_movie({}, "Arrival", actors=["A", "B", "C", " "])
+
+
+def test_update_details_keeps_fields_that_were_not_given() -> None:
+    movies = {
+        "Up": Movie(title="Up", year=2009, overview="An old man.", poster_url="http://p/up.jpg")
+    }
+
+    updated = update_details(movies, "Up", overview="A balloon trip.")
+
+    assert updated["Up"].overview == "A balloon trip."
+    assert updated["Up"].year == 2009
+    assert updated["Up"].poster_url == "http://p/up.jpg"
 
 
 def test_add_rejects_rating_out_of_range() -> None:

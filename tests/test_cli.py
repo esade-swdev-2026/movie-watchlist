@@ -99,12 +99,29 @@ def test_watch_updates_saved_movie(watchlist_file: Path) -> None:
     assert load_watchlist(watchlist_file)["Interstellar"].rating == 8
 
 
+def test_add_rejects_blank_actor_name(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["add", "Arrival", "--actor", "Amy Adams", "--actor", "  "])
+
+    assert result.exit_code == 1
+    assert "Actor names cannot be blank." in result.output
+    assert not watchlist_file.exists()
+
+
 def test_add_watched_requires_a_rating(watchlist_file: Path) -> None:
     result = runner.invoke(app, ["add", "Arrival", "--watched"])
 
     assert result.exit_code == 1
     assert "needs a rating" in result.output
     assert not watchlist_file.exists()
+
+
+def test_add_saves_a_rating_for_an_unwatched_movie(watchlist_file: Path) -> None:
+    result = runner.invoke(app, ["add", "Up", "--rating", "9"])
+
+    assert result.exit_code == 0
+    saved = load_watchlist(watchlist_file)["Up"]
+    assert saved.watched is False
+    assert saved.rating == 9
 
 
 def test_add_watched_saves_the_rating(watchlist_file: Path) -> None:

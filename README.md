@@ -41,7 +41,9 @@ A movie you have already seen needs a rating from 1 to 10, so add it with both o
 uv run movie_watchlist add "Arrival" --genre "Sci-Fi" --runtime 116 --actor "Amy Adams" --watched --rating 9
 ```
 
-Using `--watched` without `--rating` (or `--rating` without `--watched`) is rejected.
+Using `--watched` without `--rating` is rejected.
+You can also rate a movie you have not watched yet, with `add --rating` or `rate`;
+`suggest` uses those ratings to rank what to watch next.
 
 ### Show, watch and rate
 
@@ -53,7 +55,7 @@ uv run movie_watchlist rate "Up" 9
 
 `list` shows every movie as `title — watched` or `title — to watch`.
 `watch` marks a movie as watched and needs `--rating`, the same rule as `add --watched`.
-`rate` changes the rating of any movie.
+`rate` sets the rating of any movie, watched or not.
 
 ### Filter movies
 

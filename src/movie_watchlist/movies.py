@@ -60,11 +60,11 @@ def add_movie(
         raise ValueError("Runtime must be positive.")
     if watched and rating is None:
         raise ValueError("A watched movie needs a rating.")
-    if rating is not None and not watched:
-        raise ValueError("Only watched movies can have a rating.")
     if rating is not None and not MIN_RATING <= rating <= MAX_RATING:
         raise ValueError(f"Rating must be between {MIN_RATING} and {MAX_RATING}.")
-    cast = [name.strip() for name in (actors or []) if name.strip()]
+    cast = [name.strip() for name in (actors or [])]
+    if not all(cast):
+        raise ValueError("Actor names cannot be blank.")
     if len(cast) > MAX_MAIN_ACTORS:
         raise ValueError("At most three actors.")
 
@@ -112,16 +112,18 @@ def update_details(
     title: str,
     *,
     year: int | None = None,
-    overview: str = "",
-    poster_url: str = "",
+    overview: str | None = None,
+    poster_url: str | None = None,
 ) -> Watchlist:
+    """Update only the details that are given; the others keep their saved value."""
     saved = find_saved_title(movies, title)
     if saved is None:
         raise ValueError("Movie not found.")
+    current = movies[saved]
     updated = replace(
-        movies[saved],
-        year=year,
-        overview=overview.strip(),
-        poster_url=poster_url.strip(),
+        current,
+        year=current.year if year is None else year,
+        overview=current.overview if overview is None else overview.strip(),
+        poster_url=current.poster_url if poster_url is None else poster_url.strip(),
     )
     return {**movies, saved: updated}
