@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -58,6 +59,35 @@ def test_load_rejects_more_than_three_actors(tmp_path: Path) -> None:
 
 def test_load_rejects_empty_actor_names(tmp_path: Path) -> None:
     path = _write(tmp_path / "m.json", '[{"title": "Up", "actors": ["A", "  "]}]')
+
+    with pytest.raises(ValueError, match="actors"):
+        load_watchlist(path)
+
+
+def test_load_file_saved_by_previous_version(tmp_path: Path) -> None:
+    # The previous version always padded actors to three with "".
+    full_cast = ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+    records = [
+        {"title": "Up", "watched": False, "actors": ["", "", ""]},
+        {"title": "Big Fish", "watched": True, "actors": ["Ewan McGregor", "", ""]},
+        {"title": "Arrival", "watched": True, "actors": ["Amy Adams", "Jeremy Renner", ""]},
+        {"title": "Interstellar", "actors": full_cast},
+    ]
+    path = _write(tmp_path / "m.json", json.dumps(records))
+
+    movies = load_watchlist(path)
+
+    assert movies["Up"].actors == ()
+    assert movies["Big Fish"].actors == ("Ewan McGregor",)
+    assert movies["Arrival"].actors == ("Amy Adams", "Jeremy Renner")
+    assert len(movies["Interstellar"].actors) == 3
+
+
+@pytest.mark.parametrize("actors", [["", "Ed Asner", ""], ["Ed Asner", ""], [""], ["  ", "", ""]])
+def test_load_still_rejects_blank_actors_outside_the_old_padding(
+    tmp_path: Path, actors: list[str]
+) -> None:
+    path = _write(tmp_path / "m.json", json.dumps([{"title": "Up", "actors": actors}]))
 
     with pytest.raises(ValueError, match="actors"):
         load_watchlist(path)

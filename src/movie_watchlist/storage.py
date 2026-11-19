@@ -46,7 +46,7 @@ def _movie_from_record(record: object) -> Movie:
     rating = _field(record, "rating", int, None)
     if rating is not None and not MIN_RATING <= rating <= MAX_RATING:
         raise ValueError(f"Invalid watchlist file: rating of '{title}' is out of range.")
-    actors = _field(record, "actors", list, [])
+    actors = _without_legacy_padding(_field(record, "actors", list, []))
     if not all(isinstance(name, str) and name.strip() for name in actors):
         raise ValueError(f"Invalid watchlist file: actors of '{title}' must be names.")
     if len(actors) > MAX_MAIN_ACTORS:
@@ -64,6 +64,24 @@ def _movie_from_record(record: object) -> Movie:
         overview=_field(record, "overview", str, ""),
         poster_url=_field(record, "poster_url", str, ""),
     )
+
+
+LEGACY_ACTOR_SLOTS = 3
+
+
+def _without_legacy_padding(actors: list[Any]) -> list[Any]:
+    """Drop the "" padding that older versions saved after the actors.
+
+    Older versions always stored exactly three actors, filling the empty slots with ""
+    (for example ["Ed Asner", "", ""]). Only that shape is cleaned up; a blank name in
+    any other list is left in place so the loader still rejects it.
+    """
+    if len(actors) != LEGACY_ACTOR_SLOTS:
+        return actors
+    trimmed = list(actors)
+    while trimmed and trimmed[-1] == "":
+        trimmed.pop()
+    return trimmed
 
 
 def _field(record: dict[str, object], name: str, kind: type, default: object) -> Any:
