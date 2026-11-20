@@ -99,3 +99,33 @@ uv run ruff format --check .
 uv run mypy src tests
 uv run pytest
 ```
+
+## Run with Docker
+
+The image is built and published by our GitHub Actions pipeline, so nothing has to be built
+locally. The package is private: log in to GitHub's registry first, with a personal access
+token that has `read:packages`.
+
+```bash
+docker login ghcr.io -u <your-github-username>
+docker pull ghcr.io/esade-swdev-2026/movie-watchlist:v1.0
+docker run --rm ghcr.io/esade-swdev-2026/movie-watchlist:v1.0 --help
+```
+
+The watchlist is not stored in the image. The app writes it to `/app/data/watchlist.json`
+(set with `MOVIE_WATCHLIST_FILE`), and we mount a named volume on that folder, so the
+movies are still there after the container is removed:
+
+```bash
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0 add "Interstellar" --runtime 169
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0 list
+```
+
+The second command still prints Interstellar, even though the first container is gone.
+The file name can also be changed without rebuilding the image:
+
+```bash
+docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0 list
+```
+
+To remove the saved data: `docker volume rm movie-watchlist-data`.
