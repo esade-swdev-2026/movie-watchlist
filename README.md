@@ -129,3 +129,12 @@ docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-
 ```
 
 To remove the saved data: `docker volume rm movie-watchlist-data`.
+
+## Use of AI
+
+All four members of the group used AI tools, such as ChatGPT and Claude, during the project:
+
+- Kenzo used AI tools, including Claude, throughout the project to assist with writing, coding, debugging and testing. He also used them to assess and correct his own code, evaluate different approaches, identify potential errors and ensure a smooth and reliable final deployment.
+- Alvaro used ChatGPT as a learning and development assistant to better understand Python concepts, troubleshoot issues, identify potential bugs, review code quality, and explore possible solutions and improvements. He critically evaluated all suggestions and remained responsible for implementation decisions and for verifying the results.
+- Jan used ChatGPT and Claude as learning and development assistants to understand errors, review code and improve comments, and to follow the steps for the release workflow, the Dockerfile data folder and the Run with Docker section. He ran and tested every command himself, checked the results, and remained responsible for the pull requests he opened.
+- Russell used a combination of AI tools to help write text and code, check processes, troubleshoot documents and make sure the deployment was clean and bug-free.
