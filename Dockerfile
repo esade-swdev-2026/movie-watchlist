@@ -13,5 +13,6 @@ RUN useradd --create-home app && mkdir /app/data && chown app:app /app/data
 USER app
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV MOVIE_WATCHLIST_FILE=/app/data/watchlist.json
 ENTRYPOINT ["movie_watchlist"]
 CMD ["--help"]
