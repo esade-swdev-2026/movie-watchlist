@@ -1,6 +1,6 @@
 import pytest
 
-from movie_watchlist.filter_mood import filter_by_mood
+from movie_watchlist.filters import filter_by_mood
 from movie_watchlist.movies import Movie
 
 
