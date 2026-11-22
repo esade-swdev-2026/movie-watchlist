@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import partial
 
 from prompt_toolkit import Application
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding.key_processor import KeyPressEvent
@@ -11,6 +12,8 @@ from prompt_toolkit.layout import HSplit, Layout, VSplit, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import TextArea
+
+from movie_watchlist.autocomplete import MovieAutoSuggest, matches, suffix
 
 
 @dataclass(frozen=True)
@@ -92,7 +95,15 @@ def _parse_answers(answers: list[str]) -> MovieDetails:
 
 def collect_movie_details(title: str) -> MovieDetails | None:
     """Return entered details, or None if the user cancels with Esc/Ctrl-C."""
-    inputs = [TextArea(height=1, multiline=False, wrap_lines=False) for _ in FIELDS]
+    inputs = [
+        TextArea(
+            height=1,
+            multiline=False,
+            wrap_lines=False,
+            auto_suggest=MovieAutoSuggest(i) if i in (0, 3, 4) else None,
+        )
+        for i in range(len(FIELDS))
+    ]
     active = [0]
     error_message = [""]
 
@@ -135,6 +146,17 @@ def collect_movie_details(title: str) -> MovieDetails | None:
 
     bindings = KeyBindings()
 
+    def can_accept_suggestion() -> bool:
+        field = inputs[active[0]]
+        return field.buffer.cursor_position == len(field.text) and bool(
+            suffix(active[0], field.text)
+        )
+
+    @bindings.add("right", filter=Condition(can_accept_suggestion), eager=True)
+    def _accept_suggestion(_event: KeyPressEvent) -> None:
+        field = inputs[active[0]]
+        field.buffer.insert_text(suffix(active[0], field.text))
+
     @bindings.add("enter", eager=True)
     def _next_field(_event: KeyPressEvent) -> None:
         if active[0] == len(FIELDS) - 1:
@@ -160,6 +182,9 @@ def collect_movie_details(title: str) -> MovieDetails | None:
     def footer() -> StyleAndTextTuples:
         if error_message[0]:
             return [("class:error", error_message[0])]
+        choices = matches(active[0], inputs[active[0]].text)
+        if choices:
+            return [("class:hint", f"Suggestions: {', '.join(choices)}  |  Right: accept first")]
         return [("class:hint", "Up/Down: move   Enter: next/save   Esc: cancel   Blank: skip")]
 
     header = Window(

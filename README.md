@@ -15,7 +15,7 @@ uv sync
 Movies are saved in `~/.movie_watchlist.json`, so your list stays there between runs.
 Use `uv run movie_watchlist --help` to see the commands.
 
-## Interactive add form (v1.0.1)
+## Interactive add form (v1.0.2)
 
 From a normal terminal, add a movie by title to open the keyboard-navigable form:
 
@@ -34,6 +34,14 @@ The original command-line flags still work and bypass the form:
 uv run movie_watchlist add "Interstellar" --genre "Sci-Fi" --runtime 169
 uv run movie_watchlist add "Up" --no-interactive
 ```
+
+While editing **Genre**, **Director**, or **Actors**, the form suggests common values
+from curated offline lists (30 genres, 100 actors, and 100 directors). Type a prefix
+such as `Sci`, `Christopher`, or `Anne` to see a faint completion and matching
+options in the footer. Press **Right Arrow** at the end of the text to accept the
+first suggestion, or keep typing a different value. Suggestions never limit what
+you can enter. Actor suggestions apply to the name after the most recent comma.
+No API key or internet connection is needed.
 
 Use `--interactive` to explicitly request the form. When input/output are not
 connected to a terminal (for example in scripts or CI), a bare `add` stays
@@ -132,8 +140,8 @@ token that has `read:packages`.
 
 ```bash
 docker login ghcr.io -u <your-github-username>
-docker pull ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1
-docker run --rm ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1 --help
+docker pull ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2
+docker run --rm ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 --help
 ```
 
 The watchlist is not stored in the image. The app writes it to `/app/data/watchlist.json`
@@ -141,15 +149,15 @@ The watchlist is not stored in the image. The app writes it to `/app/data/watchl
 movies are still there after the container is removed:
 
 ```bash
-docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1 add "Interstellar" --runtime 169
-docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1 list
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 add "Interstellar" --runtime 169
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 list
 ```
 
 The second command still prints Interstellar, even though the first container is gone.
 The file name can also be changed without rebuilding the image:
 
 ```bash
-docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1 list
+docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 list
 ```
 
 To remove the saved data: `docker volume rm movie-watchlist-data`.
@@ -157,7 +165,7 @@ To remove the saved data: `docker volume rm movie-watchlist-data`.
 To use the published container interactively, add `-it` and a data volume:
 
 ```bash
-docker run -it --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.1 add "Interstellar"
+docker run -it --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 add "Interstellar"
 ```
 
 ## Use of AI
