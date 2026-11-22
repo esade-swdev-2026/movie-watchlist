@@ -93,7 +93,7 @@ def _parse_answers(answers: list[str]) -> MovieDetails:
     )
 
 
-def collect_movie_details(title: str) -> MovieDetails | None:
+def collect_movie_details(title: str, initial: MovieDetails | None = None) -> MovieDetails | None:
     """Return entered details, or None if the user cancels with Esc/Ctrl-C."""
     inputs = [
         TextArea(
@@ -104,6 +104,18 @@ def collect_movie_details(title: str) -> MovieDetails | None:
         )
         for i in range(len(FIELDS))
     ]
+    if initial is not None:
+        starting_values = [
+            initial.genre,
+            initial.mood,
+            str(initial.runtime) if initial.runtime is not None else "",
+            initial.director,
+            ", ".join(initial.actors),
+            "y" if initial.watched else "",
+            str(initial.rating) if initial.rating is not None else "",
+        ]
+        for field, value in zip(inputs, starting_values, strict=True):
+            field.text = value
     active = [0]
     error_message = [""]
 

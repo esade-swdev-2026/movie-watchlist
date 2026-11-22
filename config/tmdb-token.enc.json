@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "kdf": "scrypt",
+  "n": 32768,
+  "r": 8,
+  "p": 1,
+  "salt": "WjTJAUkZFsGwVpOhVd2LGg==",
+  "cipher": "AES-256-GCM",
+  "nonce": "KqDD0oMIOjSwIZzo",
+  "ciphertext": "KwLj6kqvctKCw+WytA15RKAbqMXlTmFKVfGaqPm7gmeGYxkVq6lP78HUboUDu5c0WN34zO0tqcevj4orSQOnS9N6LtYy43xdwgJSuWUbqTuCByeHzobyh+unh4BoFU5X2ugFKp7kQZhE8nObujGJRjvRu14aNhlqlCaL50U+1blbehQ9BwG/Duq9jjkFLvoKjmom5Z5mnhk6auLLhtanGHAsNGIF8DSNjo26wZwm0xeDNC8d6VVwfwvazzTRQsu2g9fQbd67qVbDxA47JEqOTruJ2LQxSQFi5xCxe6LRqoUi/V6GXX1s5xiegsFynu/Pqg2pkLqSIXj7moThYMz/szNLuII="
+}
