@@ -1,5 +1,5 @@
 # Runs on every push and every pull request. The four checks below are exactly the
-# commands in the README's "Develop" section — CI is not a different standard, it is
+# commands in the README's "Checks" section — CI is not a different standard, it is
 # the same one, run on a machine none of us owns. From module 4, when you start
 # merging through pull requests, a red check blocks the merge.
 name: check

@@ -1,6 +1,7 @@
 """Command-line interface: parses arguments, calls the core, and prints the results."""
 
 import os
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -9,6 +10,7 @@ from typing import Annotated
 import typer
 
 from movie_watchlist.filters import apply_filters, filter_by_genre, filter_by_mood
+from movie_watchlist.interactive import collect_movie_details
 from movie_watchlist.movies import (
     MAX_RATING,
     MIN_RATING,
@@ -75,9 +77,43 @@ def add(
         int | None,
         typer.Option("--rating", help="Your rating from 1 to 10. Required with --watched."),
     ] = None,
+    interactive: Annotated[
+        bool | None,
+        typer.Option(
+            "--interactive/--no-interactive",
+            help="Use the guided form; auto-opens for bare adds in a terminal.",
+        ),
+    ] = None,
 ) -> None:
     """Add a movie to your watchlist."""
     with exit_on_error():
+        given_options = (
+            watched
+            or bool(director)
+            or runtime is not None
+            or bool(mood)
+            or bool(genre)
+            or actor is not None
+            or rating is not None
+        )
+        tty = sys.stdin.isatty() and sys.stdout.isatty()
+        use_form = interactive if interactive is not None else tty and not given_options
+        if use_form:
+            if given_options:
+                raise ValueError("Do not combine --interactive with individual movie options.")
+            if not tty:
+                raise ValueError("Interactive mode requires a terminal.")
+            details = collect_movie_details(title)
+            if details is None:
+                typer.echo("Cancelled.")
+                return
+            watched = details.watched
+            director = details.director
+            runtime = details.runtime
+            mood = details.mood
+            genre = details.genre
+            actor = details.actors
+            rating = details.rating
         movies = add_movie(
             load_watchlist(watchlist_path()),
             title,
