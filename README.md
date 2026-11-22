@@ -47,6 +47,51 @@ Use `--interactive` to explicitly request the form. When input/output are not
 connected to a terminal (for example in scripts or CI), a bare `add` stays
 non-interactive for backwards compatibility.
 
+## Optional TMDB lookup (v1.1.0)
+
+From a terminal, `uv run movie_watchlist add "Interstellar"` can prefill genre,
+runtime, director and up to three actors from TMDB. Enter your local encryption
+password once per computer. After that, the token is saved to a local file in your
+user profile (never to Git), so future runs do not prompt again. The local token
+is plaintext and should be treated as a credential; on macOS/Linux the file is
+restricted to the current user. In Docker, the existing `/app/data` volume stores
+it alongside the movie list. If nothing matches or the API fails, choose **1** to search
+again (and optionally correct the title) or **2** to open the offline form.
+All fields remain editable, with offline suggestions as before.
+Mood, watched status and rating are always yours to enter. Year is shown only to
+distinguish films with the same title; no year, synopsis or poster is saved.
+
+Skip the API entirely with:
+
+```bash
+uv run movie_watchlist add "Interstellar" --no-lookup
+```
+
+The repository includes an **encrypted** API Read Access Token at
+`config/tmdb-token.enc.json`, not its plaintext value. You need its separate password
+to use the online lookup; anyone without it can still use the offline program.
+Do not share the password or any unencrypted credentials.
+
+### Credits
+
+[![TMDB official logo](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg)](https://www.themoviedb.org)
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+The logo is TMDB's official artwork. Run `uv run movie_watchlist credits` for the
+terminal attribution. API use is subject to [TMDB's terms](https://developer.themoviedb.org/docs/faq).
+
+## Browse your watchlist (v1.1.0)
+
+Run `uv run movie_watchlist list` in a terminal to open a simple movie browser.
+Use **Up/Down** to move between movies; the selected movie's saved details
+(status, genre, runtime, director, actors, mood and rating) appear underneath.
+**Home/End** jumps to the first/last movie; **Q/Esc** closes the viewer.
+Browsing the watchlist never contacts TMDB.
+
+Existing filters still work, such as `uv run movie_watchlist list --genre "Sci-Fi"`.
+Use `uv run movie_watchlist list --plain` for the original one-line display.
+Non-interactive terminals, scripts and Docker without `-it` also use plain output.
+
 ## Walkthrough
 
 The examples below build on each other. Run them in order from an empty watchlist
@@ -140,8 +185,8 @@ token that has `read:packages`.
 
 ```bash
 docker login ghcr.io -u <your-github-username>
-docker pull ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2
-docker run --rm ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 --help
+docker pull ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0
+docker run --rm ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0 --help
 ```
 
 The watchlist is not stored in the image. The app writes it to `/app/data/watchlist.json`
@@ -149,15 +194,15 @@ The watchlist is not stored in the image. The app writes it to `/app/data/watchl
 movies are still there after the container is removed:
 
 ```bash
-docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 add "Interstellar" --runtime 169
-docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 list
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0 add "Interstellar" --runtime 169
+docker run --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0 list
 ```
 
 The second command still prints Interstellar, even though the first container is gone.
 The file name can also be changed without rebuilding the image:
 
 ```bash
-docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 list
+docker run --rm -e MOVIE_WATCHLIST_FILE=/app/data/other.json -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0 list
 ```
 
 To remove the saved data: `docker volume rm movie-watchlist-data`.
@@ -165,7 +210,7 @@ To remove the saved data: `docker volume rm movie-watchlist-data`.
 To use the published container interactively, add `-it` and a data volume:
 
 ```bash
-docker run -it --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.0.2 add "Interstellar"
+docker run -it --rm -v movie-watchlist-data:/app/data ghcr.io/esade-swdev-2026/movie-watchlist:v1.1.0 add "Interstellar"
 ```
 
 ## Use of AI

@@ -10,7 +10,7 @@ from typing import Annotated
 import typer
 
 from movie_watchlist.filters import apply_filters, filter_by_genre, filter_by_mood
-from movie_watchlist.interactive import collect_movie_details
+from movie_watchlist.interactive import MovieDetails, collect_movie_details
 from movie_watchlist.movies import (
     MAX_RATING,
     MIN_RATING,
@@ -18,11 +18,14 @@ from movie_watchlist.movies import (
     Watchlist,
     add_movie,
     clean_title,
+    find_saved_title,
     mark_watched,
     rate_movie,
 )
 from movie_watchlist.storage import load_watchlist, save_watchlist
 from movie_watchlist.suggest import suggest_movie
+from movie_watchlist.tmdb import TMDBError, fetch_details, request_token, search_movies
+from movie_watchlist.viewer import browse_movies
 
 STATUS_WATCHED = "watched"
 STATUS_TO_WATCH = "to watch"
@@ -84,6 +87,9 @@ def add(
             help="Use the guided form; auto-opens for bare adds in a terminal.",
         ),
     ] = None,
+    no_lookup: bool = typer.Option(
+        False, "--no-lookup", help="Skip TMDB and use the offline form."
+    ),
 ) -> None:
     """Add a movie to your watchlist."""
     with exit_on_error():
@@ -103,7 +109,14 @@ def add(
                 raise ValueError("Do not combine --interactive with individual movie options.")
             if not tty:
                 raise ValueError("Interactive mode requires a terminal.")
-            details = collect_movie_details(title)
+            if find_saved_title(load_watchlist(watchlist_path()), title) is not None:
+                raise ValueError("Movie already exists.")
+            initial: MovieDetails | None = None
+            if not no_lookup:
+                title, initial = lookup_movie(title)
+            if find_saved_title(load_watchlist(watchlist_path()), title) is not None:
+                raise ValueError("Movie already exists.")
+            details = collect_movie_details(title, initial=initial)
             if details is None:
                 typer.echo("Cancelled.")
                 return
@@ -140,6 +153,9 @@ def list_movies(
     ),
     genre: str | None = typer.Option(None, "--genre", help="Filter movies by genre."),
     mood: str | None = typer.Option(None, "--mood", help="Filter movies by mood."),
+    plain: bool = typer.Option(
+        False, "--plain", help="Show original one-line output (no interactive viewer)."
+    ),
 ) -> None:
     """Show the movies in your watchlist."""
     with exit_on_error():
@@ -156,7 +172,10 @@ def list_movies(
         has_filter = any(value is not None for value in (director, actor, max_runtime, genre, mood))
         typer.echo("No matching movies." if has_filter else "Your watchlist is empty.")
         return
-    echo_movies(movies)
+    if sys.stdin.isatty() and sys.stdout.isatty() and not plain:
+        browse_movies(list(movies.values()))
+    else:
+        echo_movies(movies)
 
 
 @app.command()
@@ -243,3 +262,74 @@ def filter_movies_by_genre(genre: str) -> None:
         typer.echo(f'No movies found for genre "{genre}".')
         return
     echo_movies(movies)
+
+
+def lookup_movie(title: str) -> tuple[str, MovieDetails | None]:
+    """Try TMDB; on no match or error, offer retry or the offline form."""
+    token: str | None = None
+    while True:
+        try:
+            if token is None:
+                token = request_token()
+            if not token:
+                typer.echo("TMDB skipped. Using offline entry.")
+                return title, None
+
+            typer.echo(f'Searching TMDB for "{title}"...')
+            matches = search_movies(title, token)
+            if len(matches) == 1:
+                chosen = matches[0]
+            elif len(matches) > 1:
+                typer.echo("Choose a movie:")
+                for number, match in enumerate(matches, start=1):
+                    typer.echo(f"  {number}. {match.title} ({match.year})")
+                typer.echo("  0. Enter manually")
+                answer = typer.prompt("Movie number", default="0", show_default=False)
+                if not answer.isdigit() or not 1 <= int(answer) <= len(matches):
+                    return title, None
+                chosen = matches[int(answer) - 1]
+            else:
+                chosen = None
+
+            if chosen is not None:
+                info = fetch_details(chosen.id, token)
+                typer.echo("TMDB details loaded. You can edit every field.")
+                return title, MovieDetails(
+                    genre=info.genre,
+                    mood="",
+                    runtime=info.runtime,
+                    director=info.director,
+                    actors=list(info.actors),
+                    watched=False,
+                    rating=None,
+                )
+            typer.echo(f'No movie found for "{title}".')
+        except (TMDBError, EOFError, KeyboardInterrupt):
+            typer.echo("TMDB unavailable. You can retry or enter details manually.")
+            token = None  # Allow re-entering the password if it was wrong.
+
+        typer.echo("1. Try searching again")
+        typer.echo("2. Enter movie details manually")
+        while True:
+            try:
+                answer = typer.prompt("Choose [1/2]", default="2", show_default=False)
+            except (EOFError, KeyboardInterrupt):
+                return title, None
+            if answer == "2":
+                return title, None
+            if answer == "1":
+                try:
+                    corrected = typer.prompt("Movie title", default=title).strip()
+                except (EOFError, KeyboardInterrupt):
+                    return title, None
+                if corrected:
+                    title = corrected
+                break
+            typer.echo("Please enter 1 or 2.")
+
+
+@app.command()
+def credits() -> None:
+    """Show the source of optional movie metadata."""
+    typer.echo("Movie metadata: TMDB (The Movie Database) — https://www.themoviedb.org")
+    typer.echo("This product uses the TMDB API but is not endorsed or certified by TMDB.")
